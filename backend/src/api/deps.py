@@ -4,6 +4,7 @@ from functools import lru_cache
 from src.config import get_settings
 from src.db import SessionLocal
 from src.ingestion.embed import Embedder, FakeEmbedder, SentenceTransformerEmbedder
+from src.reasoning.llm.client import FakeLLMClient, LiteLLMClient, LLMClient
 
 
 def get_db():
@@ -21,10 +22,7 @@ def get_embedder() -> Embedder:
     return SentenceTransformerEmbedder(get_settings().embed_model)
 
 
-def get_llm() -> "LLMClient":  # noqa: F821
-    # local import: src.reasoning.llm lands in Task 15
-    from src.reasoning.llm.client import FakeLLMClient, LiteLLMClient, LLMClient  # noqa: F401
-
+def get_llm() -> LLMClient:
     spec = os.environ.get("LLM", "")
     if spec.startswith("fake:"):
         return FakeLLMClient(spec[5:])
