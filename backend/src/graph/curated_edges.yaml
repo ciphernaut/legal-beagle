@@ -1,0 +1,22 @@
+authorised_by:
+  - act: "Corporations Act"
+    heads_of_power: ["51(xx)"]
+    note: "Corporations power; NSW v Commonwealth (Work Choices) [2006] HCA 52"
+  - act: "Fair Work Act"
+    heads_of_power: ["51(xx)", "51(xxxv)"]
+    note: "Corporations and conciliation/arbitration powers"
+  - act: "Migration Act"
+    heads_of_power: ["51(xix)", "51(xxvii)"]
+    note: "Aliens and immigration powers"
+  - act: "Income Tax Assessment Act"
+    heads_of_power: ["51(ii)"]
+    note: "Taxation power"
+  - act: "Competition and Consumer Act"
+    heads_of_power: ["51(xx)", "51(i)"]
+    note: "Corporations and trade and commerce powers"
+  - act: "Marriage Act"
+    heads_of_power: ["51(xxi)"]
+    note: "Marriage power"
+  - act: "Native Title Act"
+    heads_of_power: ["51(xxvi)"]
+    note: "Race power; Western Australia v Commonwealth [1995] HCA 47"
