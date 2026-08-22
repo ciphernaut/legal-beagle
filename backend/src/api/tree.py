@@ -3,7 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.api.deps import get_db
-from src.graph.models import Act, ActVersion, EdgeKind, NodeType, Provision
+from src.graph.models import Act, ActVersion, Edge, EdgeKind, NodeType, Provision
 from src.graph.traversal import NodeRef, neighbours, node_ref
 
 router = APIRouter(tags=["tree"])
@@ -11,6 +11,11 @@ router = APIRouter(tags=["tree"])
 
 def _ref_dict(ref: NodeRef) -> dict:
     return {"type": ref.type.value, "id": ref.id, "label": ref.label}
+
+
+def _edge_dict(edge: Edge) -> dict:
+    """Provenance of the edge that put this child under its parent."""
+    return {"kind": edge.kind, "extraction": edge.extraction, "confidence": edge.confidence}
 
 
 def _resolve_root(session: Session, root: str) -> Act | None:
@@ -38,8 +43,10 @@ def get_tree(root: str = Query(...), session: Session = Depends(get_db)) -> dict
     ).all() if latest else []
     children = []
     for p in provisions:
-        cases = [{"node": _ref_dict(n.node), "children": []}
+        cases = [{"node": _ref_dict(n.node), "edge": _edge_dict(n.edge), "children": []}
                  for n in neighbours(session, NodeType.provision, p.id, [EdgeKind.INTERPRETS], "in")]
+        # Provisions hang off their act structurally (act_version_id), not via an edge row.
         children.append({"node": _ref_dict(node_ref(session, NodeType.provision, p.id)),
-                         "children": cases})
-    return {"node": _ref_dict(node_ref(session, NodeType.act, act.id)), "children": children}
+                         "edge": None, "children": cases})
+    return {"node": _ref_dict(node_ref(session, NodeType.act, act.id)),
+            "edge": None, "children": children}

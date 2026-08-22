@@ -6,7 +6,9 @@ services:
       POSTGRES_PASSWORD: legal
       POSTGRES_DB: legal
     ports: ["5432:5432"]
-    volumes: [pgdata:/var/lib/postgresql/data]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infrastructure/postgres-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U legal"]
       interval: 5s

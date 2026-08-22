@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v3
       - run: uv sync
-      - run: uv run ruff check .
+      - run: uv run ruff check . ../eval
       - run: uv run pytest -q
       - name: eval smoke (fixture corpus, fake LLM)
         env:

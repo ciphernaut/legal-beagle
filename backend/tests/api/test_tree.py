@@ -25,6 +25,11 @@ def test_tree_from_constitution(client, db_session):
     assert not any(lbl.endswith("preamble") for lbl in labels)
     s109 = next(c for c in tree["children"] if c["node"]["label"].endswith("s109"))
     assert s109["children"][0]["node"]["label"].startswith("Mabo")
+    # Provenance must survive the tree projection.
+    assert s109["children"][0]["edge"]["kind"] == "INTERPRETS"
+    assert s109["children"][0]["edge"]["extraction"] == "parsed"
+    assert s109["children"][0]["edge"]["confidence"] == 1.0
+    assert s109["edge"] is None  # provisions hang off the act structurally, not via an edge
 
 
 def test_tree_bad_root(client, db_session):
