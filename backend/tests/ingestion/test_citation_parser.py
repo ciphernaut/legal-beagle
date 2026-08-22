@@ -28,3 +28,10 @@ def test_section_refs_with_and_without_act_hint():
 def test_dedupe_preserves_order():
     c = parse_citations("[2020] HCA 1 ... [2019] HCA 2 ... [2020] HCA 1")
     assert [n.raw for n in c.neutral] == ["[2020] HCA 1", "[2019] HCA 2"]
+
+
+def test_act_hint_accepts_curly_apostrophe():
+    c = parse_citations("s 5 of the Workers’ Compensation Act 1958 applies.")
+    assert [(s.section, s.act_hint) for s in c.sections] == [
+        ("5", "Workers’ Compensation Act 1958")
+    ]

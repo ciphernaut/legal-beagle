@@ -22,6 +22,7 @@ from src.graph.models import (
     Paragraph,
     Provision,
 )
+from src.graph.naming import short_name
 from src.graph.seed import get_court_by_code
 from src.ingestion.parsers.act_parser import ParsedProvision, parse_act
 from src.ingestion.parsers.judgment_parser import parse_judgment, split_case_citation
@@ -45,8 +46,7 @@ class LoadStats:
     skipped: int = 0
 
 
-def short_name(title: str) -> str:
-    return re.sub(r"\s+(Act|Regulations?)\s+\d{4}.*$", r" \1", title).strip()
+__all__ = ["LoadStats", "load_oalc", "short_name"]  # short_name re-exported from graph.naming
 
 
 def _parse_date(s: str | None) -> date | None:
@@ -95,6 +95,7 @@ def _load_case(session: Session, rec: dict) -> str:
     name, neutral = split_case_citation(rec["citation"])
     if neutral is None:
         return "skipped"
+    neutral = " ".join(neutral.split())
     court = get_court_by_code(session, neutral.split()[1])
     if court is None:
         return "skipped"

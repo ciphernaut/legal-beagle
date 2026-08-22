@@ -14,12 +14,15 @@ from src.graph.models import (
     Paragraph,
     Provision,
 )
+from src.graph.naming import short_name
 from src.ingestion.parsers.citation_parser import parse_citations
-from src.ingestion.sources.oalc import short_name
 
 
 def resolve_neutral(session: Session, raw: str) -> Case | None:
-    return session.scalar(select(Case).where(Case.neutral_citation == raw))
+    # Neutral citations are stored with single spaces; normalise the lookup to match.
+    return session.scalar(
+        select(Case).where(Case.neutral_citation == " ".join(raw.split()))
+    )
 
 
 def resolve_section(session: Session, section: str, act_hint: str | None) -> Provision | None:

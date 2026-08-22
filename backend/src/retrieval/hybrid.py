@@ -68,7 +68,8 @@ def search(session: Session, query: str, embedder: Embedder, *, k: int = 10,
 
     accumulate(session.execute(_FTS_SQL, {"q": query, "n": n}).all(), "fts")
     vec = embedder.embed([query])[0]
-    accumulate(session.execute(_VEC_SQL, {"v": str(vec), "n": n}).all(), "vector")
+    literal = "[" + ",".join(repr(float(x)) for x in vec) + "]"
+    accumulate(session.execute(_VEC_SQL, {"v": literal, "n": n}).all(), "vector")
 
     ranked = sorted(fused.items(), key=lambda kv: kv[1]["score"], reverse=True)[:k]
     hits: list[Hit] = []

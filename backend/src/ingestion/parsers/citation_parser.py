@@ -15,7 +15,10 @@ SECTION_LIST_RE = re.compile(
     r"(?:(?:,\s*|\s+and\s+)\d+[A-Z]{0,3}(?:\([^)\s]{1,6}\))*)*)"
 )
 # "of the Corporations Act 2001 (Cth)" or "of the Constitution" right after a section list
-ACT_HINT_RE = re.compile(r"^\s*of\s+the\s+((?:[A-Z][\w''\-]*\s+)*(?:Act\s+\d{4}|Constitution))")
+# The character class must carry both the ASCII apostrophe and U+2019 (“Workers’”).
+ACT_HINT_RE = re.compile(
+    r"^\s*of\s+the\s+((?:[A-Z][\w'’\-]*\s+)*(?:Act\s+\d{4}|Constitution))"
+)
 SECTION_SPLIT_RE = re.compile(r",\s*|\s+and\s+")
 
 
