@@ -1,4 +1,5 @@
 import argparse
+import sys
 from pathlib import Path
 
 from src.config import get_settings
@@ -27,21 +28,27 @@ def main() -> None:
 
     configure_sessions(get_engine())
     with SessionLocal() as session:
-        seed_reference_data(session)
-        session.commit()
-        stats = load_oalc(session, args.oalc, sources=set(args.sources.split(",")),
-                          jurisdictions=set(args.jurisdictions.split(",")))
-        session.commit()
-        print(f"loaded acts={stats.acts} cases={stats.cases} skipped={stats.skipped}")
-        cites, interprets = link_case_citations(session)
-        session.commit()
-        print(f"edges cites={cites} interprets={interprets}")
-        print(f"curated edges={load_curated_edges(session)}")
-        session.commit()
-        if not args.no_embed:
-            n = embed_pending(session, SentenceTransformerEmbedder(get_settings().embed_model))
+        try:
+            seed_reference_data(session)
             session.commit()
-            print(f"embedded rows={n}")
+            stats = load_oalc(session, args.oalc, sources=set(args.sources.split(",")),
+                              jurisdictions=set(args.jurisdictions.split(",")))
+            session.commit()
+            print(f"loaded acts={stats.acts} cases={stats.cases} "
+                  f"skipped={stats.skipped} failed={stats.failed}")
+            cites, interprets = link_case_citations(session)
+            session.commit()
+            print(f"edges cites={cites} interprets={interprets}")
+            print(f"curated edges={load_curated_edges(session)}")
+            session.commit()
+            if not args.no_embed:
+                n = embed_pending(session, SentenceTransformerEmbedder(get_settings().embed_model))
+                session.commit()
+                print(f"embedded rows={n}")
+        except Exception as exc:  # noqa: BLE001 - top-level CLI guard
+            session.rollback()
+            print(f"ingestion failed: {exc!r}", file=sys.stderr)
+            sys.exit(1)
 
 
 if __name__ == "__main__":

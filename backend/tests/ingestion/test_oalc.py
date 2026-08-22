@@ -68,3 +68,21 @@ def test_provenance_on_provisions_and_edges(db_session):
     decided_by = db_session.scalar(select(Edge).where(Edge.kind == EdgeKind.DECIDED_BY))
     assert (decided_by.source_url, decided_by.source_licence) == (
         case.source_url, case.source_licence)
+
+
+BAD_FIXTURE = Path(__file__).parent.parent / "fixtures" / "oalc_bad.jsonl"
+
+
+def test_bad_record_is_contained_and_run_continues(db_session):
+    """An unmappable jurisdiction fails one record; the surrounding records still load."""
+    seed_reference_data(db_session)
+    stats = load_oalc(db_session, BAD_FIXTURE,
+                      sources={"federal_register_of_legislation", "high_court_of_australia"},
+                      jurisdictions={"commonwealth", "mars"})
+    db_session.commit()
+
+    assert stats.failed == 1
+    assert (stats.acts, stats.cases) == (1, 2)
+    assert db_session.scalar(select(Act)).title == "Commonwealth of Australia Constitution Act"
+    citations = set(db_session.scalars(select(Case.neutral_citation)).all())
+    assert citations == {"[1992] HCA 23", "[1988] HCA 69"}

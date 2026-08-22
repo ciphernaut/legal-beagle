@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import json
+import logging
 import re
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from src.graph.models import (
@@ -38,12 +40,15 @@ LICENCE_BY_SOURCE = {
 }
 YEAR_RE = re.compile(r"\b(1[89]\d{2}|20\d{2})\b")
 
+logger = logging.getLogger(__name__)
+
 
 @dataclass
 class LoadStats:
     acts: int = 0
     cases: int = 0
     skipped: int = 0
+    failed: int = 0
 
 
 __all__ = ["LoadStats", "load_oalc", "short_name"]  # short_name re-exported from graph.naming
@@ -123,25 +128,48 @@ def _load_case(session: Session, rec: dict) -> str:
     return "loaded"
 
 
+def _load_record(session: Session, rec: dict, juris_rows: dict[str, Jurisdiction]) -> str:
+    """Load one record. Returns 'act', 'exists', 'loaded' or 'skipped'."""
+    juris = juris_rows[OALC_JURISDICTION_MAP[rec["jurisdiction"]]]
+    if rec["type"] == "primary_legislation":
+        return "act" if _load_act(session, rec, juris) else "exists"
+    if rec["type"] == "decision":
+        return _load_case(session, rec)
+    return "skipped"
+
+
 def load_oalc(session: Session, path: Path, *, sources: set[str],
               jurisdictions: set[str]) -> LoadStats:
+    """Load an OALC JSONL corpus. Never commits; a bad record never aborts the run.
+
+    Each record is loaded in its own SAVEPOINT so a malformed or unmappable one is rolled
+    back on its own and counted in ``LoadStats.failed`` — a multi-gigabyte corpus must not
+    be lost to a single bad line.
+    """
     stats = LoadStats()
     juris_rows = {j.code: j for j in session.scalars(select(Jurisdiction)).all()}
     with path.open() as fh:
-        for line in fh:
+        for lineno, line in enumerate(fh, start=1):
             if not line.strip():
                 continue
-            rec = json.loads(line)
+            try:
+                rec = json.loads(line)
+            except ValueError as exc:
+                stats.failed += 1
+                logger.warning("%s line %d: unparseable JSON: %s", path, lineno, exc)
+                continue
             if rec.get("source") not in sources or rec.get("jurisdiction") not in jurisdictions:
                 stats.skipped += 1
                 continue
-            juris = juris_rows[OALC_JURISDICTION_MAP[rec["jurisdiction"]]]
-            if rec["type"] == "primary_legislation":
-                stats.acts += int(_load_act(session, rec, juris))
-            elif rec["type"] == "decision":
-                outcome = _load_case(session, rec)
-                stats.cases += outcome == "loaded"
-                stats.skipped += outcome == "skipped"
-            else:
-                stats.skipped += 1
+            try:
+                with session.begin_nested():
+                    outcome = _load_record(session, rec, juris_rows)
+            except (IntegrityError, ValueError, KeyError) as exc:
+                stats.failed += 1
+                logger.warning("record %s failed to load: %r",
+                               rec.get("version_id"), exc)
+                continue
+            stats.acts += outcome == "act"
+            stats.cases += outcome == "loaded"
+            stats.skipped += outcome == "skipped"
     return stats

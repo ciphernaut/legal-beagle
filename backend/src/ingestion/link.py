@@ -35,9 +35,18 @@ def resolve_section(session: Session, section: str, act_hint: str | None) -> Pro
         .order_by(ActVersion.in_force_from.desc().nulls_last())
     )
     if act_hint is None:
-        rows = session.scalars(q).all()
-        acts = {r.act_version.act_id for r in rows}
-        return rows[0] if len(acts) == 1 else None
+        # Ambiguous unless exactly one act has this identifier; LIMIT 2 is enough to tell,
+        # and avoids loading every matching provision in the corpus.
+        act_ids = session.scalars(
+            select(ActVersion.act_id)
+            .join(Provision, Provision.act_version_id == ActVersion.id)
+            .where(Provision.identifier == ident)
+            .distinct()
+            .limit(2)
+        ).all()
+        if len(act_ids) != 1:
+            return None
+        return session.scalars(q.where(ActVersion.act_id == act_ids[0])).first()
     if act_hint.lower() == "constitution":
         q = q.where(Act.title.ilike("%Constitution Act%"))
     else:
@@ -57,7 +66,8 @@ def edge_exists(session: Session, src_type, src_id, dst_type, dst_id, kind) -> b
 
 def link_case_citations(session: Session) -> tuple[int, int]:
     cites = interprets = 0
-    for para in session.scalars(select(Paragraph)).all():
+    # Stream paragraphs: the real corpus has millions and .all() would load them all.
+    for para in session.scalars(select(Paragraph).execution_options(yield_per=500)):
         case = para.judgment.case
         c = parse_citations(para.text)
         for n in c.neutral:
