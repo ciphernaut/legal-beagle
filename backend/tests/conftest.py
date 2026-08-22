@@ -51,6 +51,12 @@ def client(engine, monkeypatch):
     from src.config import get_settings
 
     get_settings.cache_clear()
+    from src.db import get_engine
+
+    # create_app() rebinds the global SessionLocal to get_engine(); without clearing the
+    # cache an engine built from earlier (production) settings would be reused, pointing
+    # the whole app at the real database. test_client_binds_test_database guards this.
+    get_engine.cache_clear()
     from src.api.deps import get_embedder
 
     get_embedder.cache_clear()
