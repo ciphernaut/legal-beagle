@@ -1,0 +1,50 @@
+[project]
+name = "legal-beagle-backend"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "sqlalchemy>=2.0",
+    "alembic>=1.13",
+    "psycopg[binary]>=3.2",
+    "pgvector>=0.3",
+    "pydantic-settings>=2.4",
+    "litellm>=1.50",
+    "httpx>=0.27",
+    "sse-starlette>=2.1",
+    "pyyaml>=6.0",
+    "sentence-transformers>=3.0",
+    "torch>=2.2",
+    "huggingface-hub>=0.24",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.6",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+filterwarnings = [
+    # starlette's TestClient still imports httpx directly; the "httpx2" successor
+    # package it references doesn't exist on PyPI yet, so there is nothing to
+    # install to silence this at the source. Safe to ignore until starlette ships
+    # a real fix.
+    "ignore:Using `httpx` with `starlette.testclient` is deprecated:starlette.exceptions.StarletteDeprecationWarning",
+]
+
+[tool.ruff]
+line-length = 100
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
