@@ -14,7 +14,6 @@ def test_db_connects(db_session):
 def test_client_binds_test_database(client):
     """create_app() rebinds the global SessionLocal; guard that it lands on the test DB."""
     from src.db import SessionLocal
-
     from tests.conftest import TEST_URL
 
     assert str(SessionLocal.kw["bind"].url).endswith(TEST_URL.rsplit("/", 1)[-1])

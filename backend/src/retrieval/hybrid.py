@@ -84,6 +84,9 @@ def search(session: Session, query: str, embedder: Embedder, *, k: int = 10,
         seen.add((ntype, nid))
 
     if expand:
+        # Imported here: context.py depends on Hit, defined above.
+        from src.retrieval.context import node_text
+
         for h in list(hits):
             if h.type != NodeType.provision:
                 continue
@@ -91,6 +94,6 @@ def search(session: Session, query: str, embedder: Embedder, *, k: int = 10,
                 key = (nb.node.type, nb.node.id)
                 if key not in seen:
                     seen.add(key)
-                    hits.append(Hit(nb.node.type, nb.node.id, nb.node.label, nb.node.label,
-                                    h.score * 0.5, "graph"))
+                    hits.append(Hit(nb.node.type, nb.node.id, nb.node.label,
+                                    node_text(session, nb.node), h.score * 0.5, "graph"))
     return hits

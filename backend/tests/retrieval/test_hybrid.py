@@ -27,7 +27,10 @@ def test_fts_finds_inconsistency_provision_and_expands_to_case(db_session):
     assert hits[0].type == NodeType.provision and hits[0].label.endswith("s109")
     assert hits[0].via in ("fts", "both")
     graph_hits = [h for h in hits if h.via == "graph"]
-    assert any(h.type == NodeType.case and h.label.startswith("Mabo") for h in graph_hits)
+    mabo = next(h for h in graph_hits if h.type == NodeType.case and h.label.startswith("Mabo"))
+    # Expanded hits must carry real document text, not just their label.
+    assert mabo.text != mabo.label
+    assert mabo.text.startswith("The plaintiffs claim native title")
 
 
 def test_no_expand_returns_only_direct_hits(db_session):
