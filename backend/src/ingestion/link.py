@@ -78,7 +78,8 @@ def link_case_citations(session: Session) -> tuple[int, int]:
                 session.add(Edge(src_type=NodeType.case, src_id=case.id, dst_type=NodeType.case,
                                  dst_id=target.id, kind=EdgeKind.CITES, treatment=None,
                                  extraction=Extraction.parsed, confidence=1.0,
-                                 source_url=case.source_url))
+                                 source_url=case.source_url,
+                                 source_licence=case.source_licence))
                 cites += 1
         for s in c.sections:
             prov = resolve_section(session, s.section, s.act_hint)
@@ -88,7 +89,8 @@ def link_case_citations(session: Session) -> tuple[int, int]:
                 session.add(Edge(src_type=NodeType.case, src_id=case.id,
                                  dst_type=NodeType.provision, dst_id=prov.id,
                                  kind=EdgeKind.INTERPRETS, extraction=Extraction.parsed,
-                                 confidence=1.0, source_url=case.source_url))
+                                 confidence=1.0, source_url=case.source_url,
+                                 source_licence=case.source_licence))
                 interprets += 1
         session.flush()
     return cites, interprets

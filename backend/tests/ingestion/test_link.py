@@ -34,6 +34,7 @@ def test_link_creates_interprets_but_not_unresolvable_cites(db_session):
     assert (cites, interprets) == (0, 1)
     e = db_session.scalar(select(Edge).where(Edge.kind == EdgeKind.INTERPRETS))
     assert e.src_type == NodeType.case and e.dst_type == NodeType.provision
+    assert e.source_licence == "Crown-HCA"
     assert link_case_citations(db_session) == (0, 0)
 
 
