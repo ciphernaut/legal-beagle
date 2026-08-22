@@ -43,9 +43,17 @@ def db_session(engine) -> Session:
 @pytest.fixture
 def client(engine, monkeypatch):
     monkeypatch.setenv("DATABASE_URL", TEST_URL)
+    monkeypatch.setenv("EMBEDDER", "fake")
+    monkeypatch.setenv(
+        "LLM",
+        "fake:## Precedent\n[1992] HCA 23 applied s 109 of the Constitution. See [1950] HCA 99.",
+    )
     from src.config import get_settings
 
     get_settings.cache_clear()
+    from src.api.deps import get_embedder
+
+    get_embedder.cache_clear()
     from src.main import create_app
 
     return TestClient(create_app())
