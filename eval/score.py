@@ -35,7 +35,9 @@ def score_case(session: Session, llm: LLMClient, embedder: Embedder, gold: dict)
     if case is None:
         return None
     answer, ver = asyncio.run(_run(session, llm, embedder, case.id))
-    resolved = {c["raw"] for c in ver["citations"] if c["status"] != "unresolved"}
+    # `unverifiable` (reported citations, no Phase 1 index) does not count as recalled.
+    resolved = {c["raw"] for c in ver["citations"]
+                if c["status"] not in ("unresolved", "unverifiable")}
     expected = set(gold.get("key_authorities", [])) | set(gold.get("key_provisions", []))
     recall = len(expected & resolved) / len(expected) if expected else 1.0
     return {

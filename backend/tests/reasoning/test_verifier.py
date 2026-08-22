@@ -10,7 +10,7 @@ from src.reasoning.verifier import CitationStatus, verify
 FIXTURE = Path(__file__).parent.parent / "fixtures" / "oalc_sample.jsonl"
 
 
-def test_verify_classifies_three_ways(db_session):
+def test_verify_classifies_four_ways(db_session):
     seed_reference_data(db_session)
     load_oalc(db_session, FIXTURE,
               sources={"federal_register_of_legislation", "high_court_of_australia"},
@@ -27,8 +27,16 @@ def test_verify_classifies_three_ways(db_session):
     assert by_raw["s 109 of the Constitution"].status == CitationStatus.resolved_outside_context
     assert by_raw["s 109 of the Constitution"].node.id == s109.id
     assert by_raw["[1988] HCA 69"].status == CitationStatus.unresolved
-    assert by_raw["(1992) 175 CLR 1"].status == CitationStatus.unresolved
-    assert v.precision == 0.5
+    # Reported citations have no index in Phase 1: neither credited nor blamed.
+    assert by_raw["(1992) 175 CLR 1"].status == CitationStatus.unverifiable
+    assert by_raw["(1992) 175 CLR 1"].node is None
+    assert v.precision == 2 / 3  # 3 checkable citations, 2 of them resolved
+
+
+def test_only_reported_citations_is_precision_one(db_session):
+    v = verify(db_session, "See (1992) 175 CLR 1.", set())
+    assert [c.status for c in v.citations] == [CitationStatus.unverifiable]
+    assert v.precision == 1.0
 
 
 def test_no_citations_is_precision_one(db_session):
