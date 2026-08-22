@@ -1,0 +1,16 @@
+cases:
+  - neutral_citation: "[1992] HCA 23"   # Mabo v Queensland (No 2)
+    key_authorities: []
+    key_provisions: []
+  - neutral_citation: "[2006] HCA 52"   # NSW v Commonwealth (Work Choices)
+    key_authorities: ["[1971] HCA 16"]   # Strickland v Rocla Concrete Pipes
+    key_provisions: ["s 51(xx) of the Constitution"]
+  - neutral_citation: "[1983] HCA 21"   # Commonwealth v Tasmania (Tasmanian Dam)
+    key_authorities: ["[1982] HCA 27"]   # Koowarta v Bjelke-Petersen
+    key_provisions: ["s 51(xxix) of the Constitution"]
+  - neutral_citation: "[1988] HCA 18"   # Cole v Whitfield
+    key_authorities: []
+    key_provisions: ["s 92 of the Constitution"]
+  - neutral_citation: "[1920] HCA 54"   # Engineers' Case
+    key_authorities: []
+    key_provisions: ["s 51(xxxv) of the Constitution"]

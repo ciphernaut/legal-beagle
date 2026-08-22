@@ -1,0 +1,33 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env: { POSTGRES_USER: legal, POSTGRES_PASSWORD: legal, POSTGRES_DB: legal_test }
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U legal" --health-interval 5s --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgresql+psycopg://legal:legal@localhost:5432/legal_test
+      DATABASE_URL: postgresql+psycopg://legal:legal@localhost:5432/legal_test
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv sync
+      - run: uv run ruff check .
+      - run: uv run pytest -q
+      - name: eval smoke (fixture corpus, fake LLM)
+        env:
+          EMBEDDER: fake
+          LLM: "fake:[1992] HCA 23 applied s 109 of the Constitution."
+          PYTHONPATH: ".:.."
+        run: |
+          uv run alembic upgrade head
+          uv run python -m src.ingestion.run --oalc tests/fixtures/oalc_sample.jsonl --no-embed
+          uv run python -m eval
