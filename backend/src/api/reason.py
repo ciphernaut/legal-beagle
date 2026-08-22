@@ -1,4 +1,5 @@
 import json
+import logging
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -11,6 +12,8 @@ from src.graph.traversal import node_ref
 from src.reasoning.frameworks.base import BaseFramework
 from src.reasoning.frameworks.common_law import CommonLawFramework
 from src.reasoning.modes.reverse_engineering import ReverseEngineeringMode
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/reason", tags=["reason"])
 
@@ -38,8 +41,16 @@ async def reverse(req: ReverseRequest, session: Session = Depends(get_db)):  # n
     llm, embedder, framework = get_llm(), get_embedder(), FRAMEWORKS[req.framework]()
 
     async def gen():
-        async for ev in mode.run(session, llm, framework, embedder,
-                                 node_type=req.node_type, node_id=req.node_id):
-            yield {"event": ev.kind, "data": json.dumps(ev.payload)}
+        # Any mid-stream failure must still terminate the SSE body with an explicit
+        # `error` event: a truncated stream would leave the client holding unverified
+        # `token` prose that looks identical to a verified answer.
+        try:
+            async for ev in mode.run(session, llm, framework, embedder,
+                                     node_type=req.node_type, node_id=req.node_id):
+                yield {"event": ev.kind, "data": json.dumps(ev.payload)}
+        except Exception:
+            logger.exception("reasoning stream failed for %s:%s", req.node_type, req.node_id)
+            yield {"event": "error", "data": json.dumps(
+                {"message": "reasoning failed before verification completed", "verified": False})}
 
     return EventSourceResponse(gen(), sep="\n")

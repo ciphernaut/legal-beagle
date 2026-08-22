@@ -34,3 +34,16 @@ class FakeLLMClient:
         n = len(self.reply)
         for i in range(3):
             yield self.reply[i * n // 3:(i + 1) * n // 3]
+
+
+class FailingLLMClient:
+    """Yields one chunk then raises — exercises mid-stream failure handling."""
+
+    def __init__(self, reply: str):
+        self.reply = reply
+        self.last_messages: list[dict] = []
+
+    async def stream(self, messages: list[dict], *, temperature: float = 0.2) -> AsyncIterator[str]:
+        self.last_messages = messages
+        yield self.reply
+        raise RuntimeError("llm stream failed")

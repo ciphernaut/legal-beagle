@@ -62,3 +62,29 @@ def test_reverse_unknown_framework(client, db_session):
     r = client.post("/reason/reverse",
                     json={"node_type": "case", "node_id": 1, "framework": "nope"})
     assert r.status_code == 422
+
+
+def test_reverse_stream_emits_terminal_error(client, db_session, monkeypatch):
+    seed_reference_data(db_session)
+    load_oalc(db_session, FIXTURE,
+              sources={"federal_register_of_legislation", "high_court_of_australia"},
+              jurisdictions={"commonwealth"})
+    link_case_citations(db_session)
+    embed_pending(db_session, FakeEmbedder())
+    db_session.commit()
+    mabo = db_session.scalar(select(Case))
+    monkeypatch.setenv("LLM", "fake-error:partial prose citing [1992] HCA 23")
+
+    with client.stream("POST", "/reason/reverse",
+                       json={"node_type": "case", "node_id": mabo.id,
+                             "framework": "common_law"}) as r:
+        assert r.status_code == 200
+        body = "".join(r.iter_text())
+    events = _parse_sse(body)
+    kinds = [k for k, _ in events]
+    assert kinds[-1] == "error"
+    assert "done" not in kinds and "verification" not in kinds
+    assert events[-1][1] == {
+        "message": "reasoning failed before verification completed", "verified": False
+    }
+    assert "token" in kinds  # unverified prose was emitted before the failure
