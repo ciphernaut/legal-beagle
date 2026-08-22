@@ -18,3 +18,5 @@ def test_seed_is_idempotent_and_builds_hierarchy(db_session):
     assert fca.parent_court.parent_court_id == hca.id
     appeals = db_session.scalars(select(Edge).where(Edge.kind == EdgeKind.APPEALS_TO)).all()
     assert len(appeals) == 3
+    assert all(e.source_url == "curated:seed.py" for e in appeals)
+    assert all(e.source_licence is None for e in appeals)

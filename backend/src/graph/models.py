@@ -49,6 +49,7 @@ class ProvenanceMixin:
     extraction: Mapped[Extraction] = mapped_column(String(16), default=Extraction.parsed)
 
 
+# Reference data seeded from code (src/graph/seed.py), not ingested: no provenance columns.
 class Jurisdiction(Base):
     __tablename__ = "jurisdictions"
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -57,12 +58,13 @@ class Jurisdiction(Base):
     level: Mapped[str] = mapped_column(String(16))  # Commonwealth|State|Territory
 
 
+# Reference data seeded from code (src/graph/seed.py), not ingested: no provenance columns.
 class Court(Base):
     __tablename__ = "courts"
     id: Mapped[int] = mapped_column(primary_key=True)
     code: Mapped[str] = mapped_column(String(16), unique=True)  # neutral-citation abbreviation
     name: Mapped[str] = mapped_column(String(128))
-    jurisdiction_id: Mapped[int] = mapped_column(ForeignKey("jurisdictions.id"))
+    jurisdiction_id: Mapped[int] = mapped_column(ForeignKey("jurisdictions.id"), index=True)
     tier: Mapped[int] = mapped_column(Integer)  # 1 = apex
     parent_court_id: Mapped[int | None] = mapped_column(ForeignKey("courts.id"))
     jurisdiction: Mapped[Jurisdiction] = relationship()
@@ -85,7 +87,7 @@ class Act(ProvenanceMixin, Base):
 class ActVersion(Base):
     __tablename__ = "act_versions"
     id: Mapped[int] = mapped_column(primary_key=True)
-    act_id: Mapped[int] = mapped_column(ForeignKey("acts.id"))
+    act_id: Mapped[int] = mapped_column(ForeignKey("acts.id"), index=True)
     version_id: Mapped[str] = mapped_column(String(64), unique=True)  # source's id
     in_force_from: Mapped[date | None] = mapped_column(Date)
     in_force_to: Mapped[date | None] = mapped_column(Date)
@@ -94,10 +96,10 @@ class ActVersion(Base):
     provisions: Mapped[list[Provision]] = relationship(back_populates="act_version")
 
 
-class Provision(Base):
+class Provision(ProvenanceMixin, Base):
     __tablename__ = "provisions"
     id: Mapped[int] = mapped_column(primary_key=True)
-    act_version_id: Mapped[int] = mapped_column(ForeignKey("act_versions.id"))
+    act_version_id: Mapped[int] = mapped_column(ForeignKey("act_versions.id"), index=True)
     identifier: Mapped[str] = mapped_column(String(64))  # "s51(xx)"
     heading: Mapped[str | None] = mapped_column(Text)
     text: Mapped[str] = mapped_column(Text)
@@ -117,7 +119,7 @@ class Case(ProvenanceMixin, Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(Text)
     neutral_citation: Mapped[str] = mapped_column(String(64), unique=True)
-    court_id: Mapped[int] = mapped_column(ForeignKey("courts.id"))
+    court_id: Mapped[int] = mapped_column(ForeignKey("courts.id"), index=True)
     decided_on: Mapped[date | None] = mapped_column(Date)
     summary: Mapped[str | None] = mapped_column(Text)
     court: Mapped[Court] = relationship()
@@ -137,7 +139,7 @@ class Judgment(Base):
 class Paragraph(Base):
     __tablename__ = "paragraphs"
     id: Mapped[int] = mapped_column(primary_key=True)
-    judgment_id: Mapped[int] = mapped_column(ForeignKey("judgments.id"))
+    judgment_id: Mapped[int] = mapped_column(ForeignKey("judgments.id"), index=True)
     number: Mapped[int] = mapped_column(Integer)
     text: Mapped[str] = mapped_column(Text)
     embedding: Mapped[list[float] | None] = mapped_column(Vector(EMBED_DIM))
@@ -166,9 +168,11 @@ class Edge(Base):
     kind: Mapped[EdgeKind] = mapped_column(String(24))
     treatment: Mapped[str | None] = mapped_column(String(16))
     source_url: Mapped[str | None] = mapped_column(Text)
+    source_licence: Mapped[str | None] = mapped_column(String(64))
+    note: Mapped[str | None] = mapped_column(Text)
     extraction: Mapped[Extraction] = mapped_column(String(16), default=Extraction.parsed)
     confidence: Mapped[float] = mapped_column(Float, default=1.0)
-    evidence_case_id: Mapped[int | None] = mapped_column(ForeignKey("cases.id"))
+    evidence_case_id: Mapped[int | None] = mapped_column(ForeignKey("cases.id"), index=True)
     __table_args__ = (
         UniqueConstraint("src_type", "src_id", "dst_type", "dst_id", "kind", name="uq_edge"),
         Index("ix_edges_src", "src_type", "src_id"),

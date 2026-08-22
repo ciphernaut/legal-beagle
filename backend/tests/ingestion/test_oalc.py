@@ -2,7 +2,15 @@ from pathlib import Path
 
 from sqlalchemy import select
 
-from src.graph.models import Act, Case, Paragraph, Provision
+from src.graph.models import (
+    Act,
+    Case,
+    Edge,
+    EdgeKind,
+    Extraction,
+    Paragraph,
+    Provision,
+)
 from src.graph.seed import seed_reference_data
 from src.ingestion.sources.oalc import load_oalc, short_name
 
@@ -40,3 +48,23 @@ def test_loads_acts_and_cases_and_is_idempotent(db_session):
     assert (again.acts, again.cases) == (0, 0)
     assert len(db_session.scalars(select(Act)).all()) == 1
     assert len(db_session.scalars(select(Case)).all()) == 1
+
+
+def test_provenance_on_provisions_and_edges(db_session):
+    seed_reference_data(db_session)
+    load_oalc(db_session, FIXTURE, **ARGS)
+    db_session.commit()
+
+    act = db_session.scalar(select(Act))
+    version = act.versions[0]
+    for prov in db_session.scalars(select(Provision)).all():
+        assert prov.source_url == version.source_url
+        assert prov.source_licence == act.source_licence
+        assert prov.extraction == Extraction.parsed
+
+    case = db_session.scalar(select(Case))
+    in_juris = db_session.scalar(select(Edge).where(Edge.kind == EdgeKind.IN_JURISDICTION))
+    assert (in_juris.source_url, in_juris.source_licence) == (act.source_url, act.source_licence)
+    decided_by = db_session.scalar(select(Edge).where(Edge.kind == EdgeKind.DECIDED_BY))
+    assert (decided_by.source_url, decided_by.source_licence) == (
+        case.source_url, case.source_licence)

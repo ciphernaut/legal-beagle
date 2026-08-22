@@ -58,9 +58,12 @@ def _parse_date(s: str | None) -> date | None:
 
 def _add_provisions(session: Session, version: ActVersion, provs: list[ParsedProvision],
                     parent: Provision | None = None) -> None:
+    # Provenance comes from the version (URL) and the act (licence) it was parsed out of.
     for p in provs:
         row = Provision(act_version=version, identifier=p.identifier, heading=p.heading,
-                        text=p.text, parent=parent)
+                        text=p.text, parent=parent, source_url=version.source_url,
+                        source_licence=version.act.source_licence,
+                        extraction=Extraction.parsed)
         session.add(row)
         session.flush()
         _add_provisions(session, version, p.children, row)
@@ -81,7 +84,8 @@ def _load_act(session: Session, rec: dict, juris: Jurisdiction) -> bool:
         session.flush()
         session.add(Edge(src_type=NodeType.act, src_id=act.id, dst_type=NodeType.jurisdiction,
                          dst_id=juris.id, kind=EdgeKind.IN_JURISDICTION,
-                         extraction=Extraction.parsed, confidence=1.0))
+                         extraction=Extraction.parsed, confidence=1.0,
+                         source_url=act.source_url, source_licence=act.source_licence))
     version = ActVersion(act=act, version_id=rec["version_id"],
                          in_force_from=_parse_date(rec.get("date")), source_url=rec["url"])
     session.add(version)
@@ -109,7 +113,8 @@ def _load_case(session: Session, rec: dict) -> str:
     session.flush()
     session.add(Edge(src_type=NodeType.case, src_id=case.id, dst_type=NodeType.court,
                      dst_id=court.id, kind=EdgeKind.DECIDED_BY, extraction=Extraction.parsed,
-                     confidence=1.0))
+                     confidence=1.0, source_url=case.source_url,
+                     source_licence=case.source_licence))
     j = Judgment(case=case, judges=parsed.judges, disposition="majority")
     session.add(j)
     session.flush()

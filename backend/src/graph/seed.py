@@ -36,8 +36,10 @@ def _upsert_edge(session: Session, src_type, src_id, dst_type, dst_id, kind) -> 
         )
     )
     if not exists:
+        # Curated from the court hierarchy encoded in COURTS above; no external licence.
         session.add(Edge(src_type=src_type, src_id=src_id, dst_type=dst_type, dst_id=dst_id,
-                         kind=kind, extraction=Extraction.curated, confidence=1.0))
+                         kind=kind, extraction=Extraction.curated, confidence=1.0,
+                         source_url="curated:seed.py", source_licence=None))
 
 
 def seed_reference_data(session: Session) -> None:
