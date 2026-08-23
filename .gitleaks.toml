@@ -1,0 +1,19 @@
+# gitleaks configuration — https://github.com/gitleaks/gitleaks
+# Extends the built-in ruleset; only allowlists things that are provably not secrets.
+title = "legal-beagle"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Known non-secrets"
+paths = [
+  '''backend/uv\.lock$''',                 # package hashes look like high-entropy strings
+  '''backend/tests/fixtures/.*''',         # public legal text
+  '''docs/superpowers/.*''',               # design docs
+]
+regexes = [
+  '''postgresql\+psycopg://legal:legal@''',  # documented local dev credentials, not a secret
+  '''POSTGRES_PASSWORD: legal''',
+  '''api_key="local"''',                    # placeholder for keyless local LLM servers
+]

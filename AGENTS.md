@@ -55,9 +55,9 @@ scratch/            git-ignored local scratch (rootless Postgres lives here on t
 - Python ≥ 3.12, `uv`. Always `cd backend && uv run ...`.
 - Postgres 16 + pgvector on `localhost:5432`, user/password `legal`/`legal`.
   - Preferred: `docker compose up -d postgres` (image `pgvector/pgvector:pg16`); `infrastructure/postgres-init.sql` runs on first start and creates `legal_test` plus the `vector` extension in both databases.
-  - On this dev box Docker needs `sg docker -c '...'`; a rootless cluster is already running from
-    `scratch/pg.sh start|stop|status` (data in `scratch/pgdata`). Databases `legal`, `legal_test`,
-    and `legal_test_a..d` (for parallel test runs) exist with the `vector` extension.
+  - Without Docker you can run a root-less cluster from the `pgserver` pip wheel (Postgres +
+    pgvector binaries); keep it under the git-ignored `scratch/` directory. Create `legal`,
+    `legal_test` (and `legal_test_a..d` if you run tests in parallel) with `CREATE EXTENSION vector`.
 - Local LLM: `LLM_MODEL=qwen3.8-27b-fp8` at `LLM_API_BASE=http://localhost:7080/v1`.
 - Do not create `backend/.env` in automated runs; `config.py` defaults point at the local DB.
 - Torch is pinned to the CPU-only index in `pyproject.toml` — don't remove that.

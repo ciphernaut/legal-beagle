@@ -1,0 +1,17 @@
+Legal Beagle
+Copyright 2026 Legal Beagle contributors
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This software does not bundle legal content. When run, it ingests data from third-party
+sources whose licences are stored per row in the database (`source_licence`) and must be
+respected by anyone redistributing derived data:
+
+- Federal Register of Legislation (legislation.gov.au): Commonwealth legislation,
+  Creative Commons Attribution 4.0 International (CC BY 4.0), © Commonwealth of Australia.
+- High Court of Australia (hcourt.gov.au): judgments, Crown copyright, reproduction permitted
+  under the Court's terms.
+- Open Australian Legal Corpus (huggingface.co/datasets/umarbutler/open-australian-legal-corpus):
+  aggregation with per-document licence metadata; see the dataset card.
+
+AustLII and Jade.io content is not used.
