@@ -82,8 +82,8 @@ PYTHONPATH=.:.. uv run python -m eval     # reasoning scorecard
 - **Process**: this repo is executed with the Superpowers subagent-driven-development workflow.
   The ledger at `.superpowers/sdd/<plan-name>/progress.md` records completed tasks and every
   ruling made; resume from it rather than re-doing finished tasks. `git log` is the backup record.
-- **Commits**: conventional-commit subject, one task per commit (or per parallel sub-batch), with
-  the trailer `Claude-Session: <session url>` when made by an agent session.
+- **Commits**: conventional-commit subject, one task per commit (or per parallel sub-batch). Never
+  add session/agent identifier trailers (e.g. `Claude-Session:`); a commit-msg hook rejects them.
 - **Branches**: never implement on `master`; current work is on `phase1-backend`.
 - **Tests must be pristine** — no warnings in output. Fix the cause or add a justified
   `filterwarnings` entry.

@@ -10,3 +10,10 @@ repos:
     hooks:
       - id: ruff
         args: [--config, backend/pyproject.toml]
+  - repo: local
+    hooks:
+      - id: no-session-trailers
+        name: reject agent session identifiers in commit messages
+        entry: bash -c 'if grep -qiE "^(Claude-Session|X-Claude-Session)[-A-Za-z]*:" "$1"; then echo "commit message contains a session identifier trailer"; exit 1; fi' --
+        language: system
+        stages: [commit-msg]
