@@ -70,6 +70,42 @@ def test_provenance_on_provisions_and_edges(db_session):
         case.source_url, case.source_licence)
 
 
+DUPLICATES_FIXTURE = Path(__file__).parent.parent / "fixtures" / "oalc_duplicates.jsonl"
+
+
+def test_duplicate_provision_identifier_is_skipped_not_fatal(db_session):
+    """A real Act can repeat a numbering sequence across Schedules; the record must still load,
+    keeping the first provision under a duplicated identifier rather than aborting the whole Act."""
+    seed_reference_data(db_session)
+    stats = load_oalc(db_session, DUPLICATES_FIXTURE, **ARGS)
+    db_session.commit()
+    assert stats.failed == 0
+    assert stats.acts == 1
+
+    act = db_session.scalar(select(Act).where(Act.title == "Duplicate Schedule Act 2001"))
+    assert act is not None
+    idents = db_session.scalars(select(Provision.identifier)).all()
+    assert idents.count("s1") == 1
+    first = db_session.scalar(select(Provision).where(Provision.identifier == "s1"))
+    assert first.heading == "Short title"
+
+
+def test_duplicate_paragraph_number_is_skipped_not_fatal(db_session):
+    """Multi-judgment HCA decisions restart paragraph numbering per judge; the case must still
+    load, keeping the first paragraph under a duplicated number rather than aborting the case."""
+    seed_reference_data(db_session)
+    stats = load_oalc(db_session, DUPLICATES_FIXTURE, **ARGS)
+    db_session.commit()
+    assert stats.failed == 0
+    assert stats.cases == 1
+
+    case = db_session.scalar(select(Case).where(Case.neutral_citation == "[1992] HCA 99"))
+    assert case is not None
+    paras = db_session.scalars(select(Paragraph)).all()
+    assert [p.number for p in paras] == [1, 2]
+    assert paras[0].text.startswith("First judge's first paragraph")
+
+
 BAD_FIXTURE = Path(__file__).parent.parent / "fixtures" / "oalc_bad.jsonl"
 
 

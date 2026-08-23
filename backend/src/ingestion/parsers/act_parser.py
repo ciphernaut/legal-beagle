@@ -3,8 +3,13 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
-SECTION_RE = re.compile(r"^(\d+[A-Z]{0,3})\s{2,}(\S.*)$")
-CHILD_RE = re.compile(r"^\s*\(([a-z0-9]{1,4}|[ivxlc]{1,6})\)\s+(.*)$")
+# The 2001+ consolidated legislation.gov.au style has no period after the number ("51  Heading");
+# the original enacted-Act style (e.g. the Constitution as originally transcribed) has one
+# ("51.  Heading."), and its head-of-power items use "(xx.)" rather than "(xx)". Both are real
+# formats seen in the Federal Register of Legislation corpus, so both are matched; the trailing
+# period is not captured, so identifiers come out clean either way.
+SECTION_RE = re.compile(r"^(\d+[A-Z]{0,3})\.?\s{2,}(\S.*)$")
+CHILD_RE = re.compile(r"^\s*\(([a-z0-9]{1,4}|[ivxlc]{1,6})\.?\)\s+(.*)$")
 
 
 @dataclass

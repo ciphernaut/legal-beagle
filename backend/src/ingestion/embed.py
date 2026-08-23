@@ -34,7 +34,13 @@ class SentenceTransformerEmbedder:
         from sentence_transformers import SentenceTransformer
 
         self._model = SentenceTransformer(model_name)
-        self.dim = self._model.get_sentence_embedding_dimension()
+        # sentence-transformers >=5 renamed this; keep a fallback for older versions.
+        get_dim = getattr(
+            self._model,
+            "get_embedding_dimension",
+            self._model.get_sentence_embedding_dimension,
+        )
+        self.dim = get_dim()
         assert self.dim == EMBED_DIM, f"model dim {self.dim} != {EMBED_DIM}"
 
     def embed(self, texts: list[str]) -> list[list[float]]:
@@ -52,6 +58,7 @@ def _embed_table(session: Session, model, embedder: Embedder, batch_size: int) -
         for row, vec in zip(rows, embedder.embed(texts)):
             row.embedding = vec
         session.flush()
+        session.commit()
         done += len(rows)
 
 

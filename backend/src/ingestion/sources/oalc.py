@@ -62,16 +62,27 @@ def _parse_date(s: str | None) -> date | None:
 
 
 def _add_provisions(session: Session, version: ActVersion, provs: list[ParsedProvision],
-                    parent: Provision | None = None) -> None:
+                    parent: Provision | None = None, seen: set[str] | None = None) -> None:
     # Provenance comes from the version (URL) and the act (licence) it was parsed out of.
+    # Real Acts (e.g. multi-Schedule instruments) can repeat a numbering sequence across
+    # Schedules/Parts, which the flat section parser doesn't disambiguate. Rather than let a
+    # duplicate identifier abort loading the whole Act via a unique-constraint violation, keep
+    # the first occurrence and skip later ones under the same identifier.
+    if seen is None:
+        seen = set()
     for p in provs:
+        if p.identifier in seen:
+            logger.warning("act %s version %s: duplicate provision identifier %r skipped",
+                           version.act_id, version.version_id, p.identifier)
+            continue
+        seen.add(p.identifier)
         row = Provision(act_version=version, identifier=p.identifier, heading=p.heading,
                         text=p.text, parent=parent, source_url=version.source_url,
                         source_licence=version.act.source_licence,
                         extraction=Extraction.parsed)
         session.add(row)
         session.flush()
-        _add_provisions(session, version, p.children, row)
+        _add_provisions(session, version, p.children, row, seen)
 
 
 def _load_act(session: Session, rec: dict, juris: Jurisdiction) -> bool:
@@ -123,7 +134,19 @@ def _load_case(session: Session, rec: dict) -> str:
     j = Judgment(case=case, judges=parsed.judges, disposition="majority")
     session.add(j)
     session.flush()
-    session.add_all([Paragraph(judgment=j, number=n, text=t) for n, t in parsed.paragraphs])
+    # Multi-judgment HCA decisions often restart paragraph numbering per judge (each judgment's
+    # reasons begin again at [1]), which the flat paragraph parser doesn't detect. Rather than let
+    # a duplicate paragraph number abort loading the whole case via a unique-constraint violation,
+    # keep the first occurrence of each number and skip later ones.
+    seen_paras: set[int] = set()
+    paragraphs = []
+    for n, t in parsed.paragraphs:
+        if n in seen_paras:
+            logger.warning("case %s: duplicate paragraph number %d skipped", neutral, n)
+            continue
+        seen_paras.add(n)
+        paragraphs.append(Paragraph(judgment=j, number=n, text=t))
+    session.add_all(paragraphs)
     session.flush()
     return "loaded"
 
