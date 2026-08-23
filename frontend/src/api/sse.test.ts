@@ -24,6 +24,14 @@ test("SseParser tolerates CRLF separators and flushes a trailing block", () => {
   expect(p.flush()).toEqual([{ event: "done", data: '{"answer":"a"}' }]);
 });
 
+test("SseParser reassembles a CRLF pair split across chunks", () => {
+  const p = new SseParser();
+  const first = p.push("event: token\r");
+  expect(first).toEqual([]);
+  const rest = p.push('\ndata: {"text":"a"}\r\n\r\n');
+  expect(rest).toEqual([{ event: "token", data: '{"text":"a"}' }]);
+});
+
 test("toReasoningEvent parses payloads and rejects unknown kinds", () => {
   const ev = toReasoningEvent({ event: "token", data: '{"text":"x"}' });
   expect(ev).toEqual({ kind: "token", payload: { text: "x" } });

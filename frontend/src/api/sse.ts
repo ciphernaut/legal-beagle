@@ -9,7 +9,7 @@ export class SseParser {
   private buffer = "";
 
   push(chunk: string): SseMessage[] {
-    this.buffer += chunk.replace(/\r\n/g, "\n");
+    this.buffer = (this.buffer + chunk).replace(/\r\n/g, "\n");
     const out: SseMessage[] = [];
     let idx: number;
     while ((idx = this.buffer.indexOf("\n\n")) >= 0) {
