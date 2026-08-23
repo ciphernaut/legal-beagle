@@ -5,7 +5,8 @@ services:
       POSTGRES_USER: legal
       POSTGRES_PASSWORD: legal
       POSTGRES_DB: legal
-    ports: ["5432:5432"]
+    # Override the host port with POSTGRES_PORT=5433 if 5432 is taken on your machine.
+    ports: ["${POSTGRES_PORT:-5432}:5432"]
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./infrastructure/postgres-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
