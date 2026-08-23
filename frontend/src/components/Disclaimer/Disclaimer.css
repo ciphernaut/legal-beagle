@@ -1,0 +1,3 @@
+.disclaimer-banner { background: #fff4d6; border-bottom: 1px solid #e0b84a; padding: 0.5rem 1rem; font-size: 0.9rem; }
+.disclaimer-modal { position: fixed; top: 20%; left: 50%; transform: translateX(-50%); max-width: 32rem; padding: 1.5rem; border: 1px solid #999; border-radius: 6px; background: #fff; box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 10; }
+.disclaimer-modal button { margin-top: 1rem; padding: 0.5rem 1rem; }
