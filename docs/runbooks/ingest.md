@@ -58,9 +58,15 @@ uv run python -m src.ingestion.run --oalc data/corpus.jsonl
 ```
 
 Re-run of the same command without `--no-embed`. The reload half is idempotent (every record is
-recognised as already loaded), then `embed_pending` fills `provisions.embedding` first and
-`paragraphs.embedding` second. It commits after each batch of 64, so it is resumable and progress
-is visible while it runs:
+recognised as already loaded), then `embed_pending` fills `paragraphs.embedding` first (the 164 k
+HCA judgment paragraphs matter most for retrieval and are far fewer than provisions) and
+`provisions.embedding` second. It commits after each batch of 64, so it is resumable and progress
+is visible while it runs. To embed without re-parsing/re-loading the corpus (skips seed/load/link/
+curated), pass `--embed-only` and drop `--oalc`:
+
+```bash
+uv run python -m src.ingestion.run --embed-only
+```
 
 ```bash
 psql -U legal -d legal -c \

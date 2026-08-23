@@ -20,15 +20,27 @@ Download first:
 def main() -> None:
     ap = argparse.ArgumentParser(description=HELP,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--oalc", type=Path, required=True)
+    ap.add_argument("--oalc", type=Path, required=False)
     ap.add_argument("--sources", default="federal_register_of_legislation,high_court_of_australia")
     ap.add_argument("--jurisdictions", default="commonwealth")
     ap.add_argument("--no-embed", action="store_true")
+    ap.add_argument("--embed-only", action="store_true",
+                     help="Skip seed/load/link/curated steps; only embed pending rows.")
     args = ap.parse_args()
+
+    if args.embed_only and args.no_embed:
+        ap.error("--embed-only and --no-embed are mutually exclusive")
+    if not args.embed_only and args.oalc is None:
+        ap.error("--oalc is required unless --embed-only is given")
 
     configure_sessions(get_engine())
     with SessionLocal() as session:
         try:
+            if args.embed_only:
+                n = embed_pending(session, SentenceTransformerEmbedder(get_settings().embed_model))
+                session.commit()
+                print(f"embedded rows={n}")
+                return
             seed_reference_data(session)
             session.commit()
             stats = load_oalc(session, args.oalc, sources=set(args.sources.split(",")),

@@ -17,6 +17,32 @@ def test_fake_embedder_is_deterministic_unit_vectors():
     assert abs(sum(x * x for x in a) - 1.0) < 1e-6
 
 
+def test_embed_pending_embeds_paragraphs_before_provisions(db_session, monkeypatch):
+    seed_reference_data(db_session)
+    load_oalc(db_session, FIXTURE,
+              sources={"federal_register_of_legislation", "high_court_of_australia"},
+              jurisdictions={"commonwealth"})
+    db_session.commit()
+    assert db_session.scalar(select(func.count(Paragraph.id))) > 0
+    assert db_session.scalar(select(func.count(Provision.id))) > 0
+
+    import src.ingestion.embed as embed_mod
+
+    order: list[str] = []
+    real_embed_table = embed_mod._embed_table
+
+    def spy_embed_table(session, model, embedder, batch_size):
+        order.append(model.__name__)
+        return real_embed_table(session, model, embedder, batch_size)
+
+    monkeypatch.setattr(embed_mod, "_embed_table", spy_embed_table)
+
+    embed_mod.embed_pending(db_session, FakeEmbedder(), batch_size=1)
+    db_session.commit()
+
+    assert order == ["Paragraph", "Provision"]
+
+
 def test_embed_pending_fills_all_rows_and_tsv_trigger_fires(db_session):
     seed_reference_data(db_session)
     load_oalc(db_session, FIXTURE,

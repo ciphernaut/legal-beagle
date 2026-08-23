@@ -63,5 +63,7 @@ def _embed_table(session: Session, model, embedder: Embedder, batch_size: int) -
 
 
 def embed_pending(session: Session, embedder: Embedder, batch_size: int = 64) -> int:
-    return (_embed_table(session, Provision, embedder, batch_size)
-            + _embed_table(session, Paragraph, embedder, batch_size))
+    # Paragraphs (HCA judgments) matter most for retrieval and are far fewer than
+    # provisions, so embed them first to make the corpus useful as early as possible.
+    return (_embed_table(session, Paragraph, embedder, batch_size)
+            + _embed_table(session, Provision, embedder, batch_size))
