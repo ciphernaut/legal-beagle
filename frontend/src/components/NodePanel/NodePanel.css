@@ -1,0 +1,9 @@
+.node-panel h2 { margin: 0 0 0.25rem; font-size: 1.15rem; }
+.node-meta { color: #666; font-size: 0.8rem; margin: 0 0 0.75rem; }
+.node-text { white-space: pre-wrap; background: #fff; border: 1px solid #ddd; padding: 0.75rem; max-height: 18rem; overflow: auto; font-size: 0.85rem; }
+.neighbours { list-style: none; padding: 0; margin: 0; }
+.neighbours li { display: flex; gap: 0.5rem; align-items: center; padding: 0.2rem 0; flex-wrap: wrap; }
+.nb-kind { font-family: monospace; font-size: 0.8rem; color: #355; }
+.nb-treatment { font-size: 0.8rem; color: #777; }
+.nb-label { border: none; background: none; cursor: pointer; text-align: left; color: #1a3fa0; text-decoration: underline; padding: 0; }
+.node-error { color: #a00; }
