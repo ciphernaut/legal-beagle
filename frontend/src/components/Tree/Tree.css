@@ -1,0 +1,13 @@
+.tree, .tree ul { list-style: none; margin: 0; padding-left: 0; }
+.tree ul { padding-left: 1.25rem; }
+.tree-row { display: flex; align-items: center; gap: 0.4rem; padding: 0.15rem 0; }
+.tree-toggle { width: 1.4rem; border: none; background: none; cursor: pointer; font-size: 0.9rem; }
+.tree-toggle-empty { display: inline-block; }
+.tree-label { border: none; background: none; cursor: pointer; text-align: left; padding: 0.1rem 0.3rem; border-radius: 3px; }
+.tree-label:hover { background: #eef; }
+.tree-label.selected { background: #dde6ff; font-weight: 600; }
+.prov { font-size: 0.7rem; padding: 0 0.35rem; border-radius: 999px; border: 1px solid #bbb; color: #444; }
+.prov-curated { background: #e3f7e3; }
+.prov-parsed { background: #eef; }
+.prov-llm_extracted { background: #fde9d9; }
+.tree-error { color: #a00; }
