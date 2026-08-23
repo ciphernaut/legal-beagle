@@ -1,9 +1,13 @@
 cases:
-  - neutral_citation: "[1992] HCA 23"   # Mabo v Queensland (No 2)
+  - neutral_citation: "[1992] HCA 23"   # Mabo v Queensland [No 2]
     key_authorities: []
-    key_provisions: []
+    # Mabo [No 2] turns on common-law native title rather than a constitutional head of power;
+    # the statutory provision it is decided against is RDA s 10 (via Mabo [No 1]).
+    key_provisions: ["s 10 of the Racial Discrimination Act 1975"]
   - neutral_citation: "[2006] HCA 52"   # NSW v Commonwealth (Work Choices)
-    key_authorities: ["[1971] HCA 16"]   # Strickland v Rocla Concrete Pipes
+    key_authorities: ["[1971] HCA 40"]   # Strickland v Rocla Concrete Pipes — the brief cited
+                                          # "[1971] HCA 16", which is not Strickland and is absent
+                                          # from the corpus; corrected in Task 20 against the DB.
     key_provisions: ["s 51(xx) of the Constitution"]
   - neutral_citation: "[1983] HCA 21"   # Commonwealth v Tasmania (Tasmanian Dam)
     key_authorities: ["[1982] HCA 27"]   # Koowarta v Bjelke-Petersen
@@ -14,3 +18,63 @@ cases:
   - neutral_citation: "[1920] HCA 54"   # Engineers' Case
     key_authorities: []
     key_provisions: ["s 51(xxxv) of the Constitution"]
+  - neutral_citation: "[1997] HCA 25"   # Lange v Australian Broadcasting Corporation
+    key_authorities: ["[1992] HCA 45"]   # Australian Capital Television Pty Ltd v Commonwealth
+    key_provisions: ["ss 7 and 24 of the Constitution"]
+  - neutral_citation: "[1992] HCA 45"   # Australian Capital Television Pty Ltd v Commonwealth (ACTV)
+    key_authorities: []
+    key_provisions: ["ss 7 and 24 of the Constitution"]
+  - neutral_citation: "[1948] HCA 7"    # Bank of New South Wales v Commonwealth (Bank Nationalisation)
+    key_authorities: []
+    key_provisions: ["s 92 of the Constitution"]
+  - neutral_citation: "[1951] HCA 5"    # Australian Communist Party v Commonwealth (Communist Party Case)
+    key_authorities: []
+    key_provisions: ["s 51 of the Constitution"]
+  - neutral_citation: "[1995] HCA 47"   # Western Australia v Commonwealth (Native Title Act Case)
+    key_authorities: []
+    key_provisions: ["s 51(xxvi) of the Constitution"]
+  - neutral_citation: "[1996] HCA 40"   # Wik Peoples v Queensland
+    key_authorities: []
+    key_provisions: ["s 51(xxvi) of the Constitution"]
+  - neutral_citation: "[2012] HCA 23"   # Williams v Commonwealth
+    key_authorities: []
+    key_provisions: ["s 61 of the Constitution"]
+  - neutral_citation: "[1999] HCA 30"   # Sue v Hill
+    key_authorities: []
+    key_provisions: ["s 44(i) of the Constitution"]
+  - neutral_citation: "[2004] HCA 37"   # Al-Kateb v Godwin
+    key_authorities: []
+    key_provisions: ["s 51(xix) of the Constitution"]
+  - neutral_citation: "[1994] HCA 46"   # Theophanous v Herald & Weekly Times Ltd
+    key_authorities: []
+    key_provisions: ["ss 7 and 24 of the Constitution"]
+  - neutral_citation: "[1989] HCA 53"   # Street v Queensland Bar Association (the brief's candidate
+                                         # citation "[1989] HCA 34" resolves to a different, unrelated
+                                         # case in the real corpus (MacGroarty v Clauson); corrected to
+                                         # the verified real citation for Street during Task 20)
+    key_authorities: []
+    key_provisions: ["s 117 of the Constitution"]
+  - neutral_citation: "[1971] HCA 40"   # Strickland v Rocla Concrete Pipes Pty Ltd (the brief's
+                                         # candidate citation "[1971] HCA 16" does not exist in the
+                                         # real corpus; corrected to the verified real citation)
+    key_authorities: []
+    key_provisions: ["s 51(xx) of the Constitution"]
+  - neutral_citation: "[1982] HCA 27"   # Koowarta v Bjelke-Petersen
+    key_authorities: []
+    key_provisions: ["s 51(xxix) of the Constitution"]
+  - neutral_citation: "[1956] HCA 10"   # R v Kirby; Ex parte Boilermakers' Society of Australia
+    key_authorities: []
+    key_provisions: ["s 71 of the Constitution"]
+  - neutral_citation: "[1998] HCA 22"   # Kartinyeri v Commonwealth (Hindmarsh Island Bridge Case)
+    key_authorities: ["[1995] HCA 47"]   # Western Australia v Commonwealth (Native Title Act Case)
+    key_provisions: ["s 51(xxvi) of the Constitution"]
+
+# Dropped candidates (Task 20 Step 3 — confirmed absent from the real corpus via psql):
+#   [2009] HCA 23  Pape v Commissioner of Taxation — no case with this citation, or any
+#                  citation containing "Pape", exists anywhere in the downloaded corpus.jsonl.
+#   [1936] HCA 52  "Dixon in Dignan" — flagged "(verify)" in the brief; the real case
+#                  (Victorian Stevedoring & General Contracting Co Pty Ltd v Dignan) is a 1931
+#                  decision and does not appear under any citation in the corpus.
+# The corpus's 6,591 HCA judgments are spread fairly evenly across decades (366-717 per decade,
+# 1900s-2010s), so these two absences are sampling gaps in the OALC snapshot rather than an era
+# bias — see the runbook "Known gaps" section.
