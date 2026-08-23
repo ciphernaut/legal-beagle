@@ -31,7 +31,10 @@ export function useReverseReasoning() {
     abortRef.current = controller;
     setState({ ...INITIAL, phase: "streaming" });
 
-    const apply = (ev: ReasoningEvent) =>
+    const isActive = () => abortRef.current === controller;
+
+    const apply = (ev: ReasoningEvent) => {
+      if (!isActive()) return;
       setState((s) => {
         switch (ev.kind) {
           case "context": return { ...s, context: ev.payload.nodes };
@@ -41,11 +44,23 @@ export function useReverseReasoning() {
           case "error": return { ...s, phase: "error", error: ev.payload.message };
         }
       });
+    };
 
     streamReverse({ node_type: ref.type, node_id: ref.id }, apply, controller.signal)
-      .then(() => setState((s) => (s.phase === "streaming" ? { ...s, phase: "error", error: "stream ended before verification" } : s)))
+      .then(() => {
+        if (!isActive()) return;
+        setState((s) => (s.phase === "streaming" ? { ...s, phase: "error", error: "stream ended before verification" } : s));
+      })
       .catch((e: Error) => {
-        if (e.name === "AbortError") return setState((s) => ({ ...s, phase: "idle" }));
+        if (e.name === "AbortError") {
+          // Only an explicit cancel() with no subsequent run() leaves abortRef.current null;
+          // a stale abort from a superseded run (abortRef.current is a *different* controller,
+          // or this run is still active — which shouldn't happen for a real abort) must not
+          // clobber whatever the active run has since done.
+          if (abortRef.current === null) setState((s) => ({ ...s, phase: "idle" }));
+          return;
+        }
+        if (!isActive()) return;
         setState((s) => ({ ...s, phase: "error", error: e.message }));
       });
   }, [cancel]);
