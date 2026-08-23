@@ -41,7 +41,7 @@ Expect `45 passed`. If you changed the port, set `DATABASE_URL` / `TEST_DATABASE
 
 ```bash
 uv run python -m src.ingestion.run --oalc tests/fixtures/oalc_sample.jsonl --no-embed
-uv run fastapi dev src/main.py       # http://127.0.0.1:8000/docs
+uv run uvicorn src.main:app --reload --host 127.0.0.1 --port 8000   # http://127.0.0.1:8000/docs
 ```
 
 Then, e.g. `curl 'http://127.0.0.1:8000/tree?root=constitution'`.

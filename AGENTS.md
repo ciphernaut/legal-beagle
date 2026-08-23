@@ -70,7 +70,7 @@ uv sync                                   # first time; pulls CPU torch + senten
 uv run alembic upgrade head
 uv run pytest -q                          # TEST_DATABASE_URL defaults to .../legal_test
 uv run ruff check .
-uv run fastapi dev src/main.py
+uv run uvicorn src.main:app --reload --host 127.0.0.1 --port 8000
 uv run python -m src.ingestion.run --oalc data/corpus.jsonl [--no-embed]
 PYTHONPATH=.:.. uv run python -m eval     # reasoning scorecard
 ```
