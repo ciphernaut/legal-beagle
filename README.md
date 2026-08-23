@@ -46,6 +46,21 @@ uv run fastapi dev src/main.py       # http://127.0.0.1:8000/docs
 
 Then, e.g. `curl 'http://127.0.0.1:8000/tree?root=constitution'`.
 
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev            # http://127.0.0.1:5173 — proxies /api to the backend on :8000
+npm test               # Vitest + Testing Library
+```
+
+The UI shows the authority tree on the left (Constitution → provisions → interpreting cases),
+node details on the right, and an "Explain the chain of authority" button that streams the
+model's reasoning. Streamed text is flagged as unverified until the citation check arrives;
+each citation then gets a badge: ✅ verified in context · ⚠️ real but outside the supplied
+context · ❌ not found in the corpus · ❔ cannot be checked (reported citation).
+
 ### Pointing it at an LLM
 
 The reasoning endpoint talks to any OpenAI-compatible server via LiteLLM. Copy the example env
