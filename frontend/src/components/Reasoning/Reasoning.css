@@ -13,3 +13,14 @@
 .cite-unresolved { background: #fde3e3; border-color: #e07a7a; }
 .cite-unverifiable { background: #eee; }
 .precision { font-weight: 600; }
+/* Visually hidden, still announced: carries the citation status for screen readers. */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

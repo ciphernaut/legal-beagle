@@ -12,6 +12,7 @@ test.each([
   expect(el.closest(".cite")).toHaveClass(`cite-${status}`);
   expect(el.closest(".cite")).toHaveAttribute("title", STATUS_META[status].label);
   expect(el.closest(".cite")).toHaveTextContent(icon);
+  expect(screen.getByText(STATUS_META[status].label)).toBeInTheDocument(); // readable by assistive tech
 });
 
 test("shows the resolved node label", () => {

@@ -11,7 +11,8 @@ export default function CitationBadge({ citation }: { citation: Citation }) {
   const meta = STATUS_META[citation.status];
   return (
     <span className={`cite cite-${citation.status}`} title={meta.label}>
-      <span aria-hidden="true">{meta.icon}</span> <code>{citation.raw}</code>
+      <span aria-hidden="true">{meta.icon}</span>
+      <span className="sr-only">{meta.label}</span> <code>{citation.raw}</code>
       {citation.node && <small> — {citation.node.label}</small>}
     </span>
   );
