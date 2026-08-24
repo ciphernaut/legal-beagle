@@ -36,7 +36,7 @@ export default function TreeView({ root, onSelect, selected }: Props) {
   if (error) return <p role="alert" className="tree-error">Could not load tree: {error}</p>;
   if (!tree) return <p className="tree-loading">Loading authority tree…</p>;
   return (
-    <ul role="tree" className="tree" aria-label="Authority tree">
+    <ul className="tree" aria-label="Authority tree">
       <TreeNode node={tree} depth={0} expanded={expanded} onToggle={toggle} onSelect={onSelect} selected={selected} />
     </ul>
   );

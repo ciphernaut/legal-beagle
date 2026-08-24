@@ -16,8 +16,9 @@ test("tree selection drives the node panel and enables reasoning", async () => {
   expect(screen.getByRole("note")).toBeInTheDocument();
   expect(screen.getByRole("button", { name: /Explain/ })).toBeDisabled();
 
-  const s109 = await screen.findByRole("treeitem", { name: /s109/ });
-  await userEvent.click(within(s109).getByRole("button", { name: "Expand" }));
+  const s109Label = await screen.findByRole("button", { name: /s109$/ });
+  const s109Row = s109Label.closest("li") as HTMLElement;
+  await userEvent.click(within(s109Row).getByRole("button", { name: "Expand" }));
   await userEvent.click(screen.getByRole("button", { name: /Mabo/ }));
 
   expect(await screen.findByRole("heading", { level: 2, name: /Mabo v Queensland/ })).toBeInTheDocument();
