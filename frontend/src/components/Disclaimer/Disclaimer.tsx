@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./Disclaimer.css";
 
 export const DISCLAIMER_TEXT =
@@ -17,6 +17,13 @@ function readAck(): boolean {
 
 export default function Disclaimer() {
   const [acked, setAcked] = useState<boolean>(readAck);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    // jsdom has no showModal(); the `open` attribute below keeps the dialog rendered there.
+    if (dialog && !acked && typeof dialog.showModal === "function" && !dialog.open) dialog.showModal();
+  }, [acked]);
 
   function acknowledge() {
     try {
@@ -31,7 +38,7 @@ export default function Disclaimer() {
     <>
       <div role="note" className="disclaimer-banner">{DISCLAIMER_TEXT}</div>
       {!acked && (
-        <dialog open role="alertdialog" aria-labelledby="disclaimer-title" className="disclaimer-modal">
+        <dialog ref={dialogRef} open role="alertdialog" aria-labelledby="disclaimer-title" className="disclaimer-modal">
           <h2 id="disclaimer-title">Before you start</h2>
           <p>{DISCLAIMER_TEXT}</p>
           <button type="button" onClick={acknowledge}>I understand</button>

@@ -1,0 +1,4 @@
+.prov { font-size: 0.7rem; padding: 0 0.35rem; border-radius: 999px; border: 1px solid #bbb; color: #444; }
+.prov-curated { background: #e3f7e3; }
+.prov-parsed { background: #eef; }
+.prov-llm_extracted { background: #fde9d9; }

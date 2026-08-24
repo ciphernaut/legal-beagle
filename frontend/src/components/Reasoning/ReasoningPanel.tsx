@@ -34,7 +34,7 @@ export default function ReasoningPanel({ selected }: { selected: NodeRef | null 
         </>
       )}
 
-      {state.answer && <div className="answer" aria-live="polite">{state.answer}</div>}
+      {state.answer && <div className="answer">{state.answer}</div>}
 
       {state.verification && state.phase === "verified" && (
         <div className="verification">

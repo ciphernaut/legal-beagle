@@ -70,10 +70,15 @@ export async function streamReverse(
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
   const parser = new SseParser();
-  for (;;) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    for (const msg of parser.push(decoder.decode(value, { stream: true }))) onEvent(toReasoningEvent(msg));
+  try {
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      for (const msg of parser.push(decoder.decode(value, { stream: true }))) onEvent(toReasoningEvent(msg));
+    }
+    for (const msg of parser.flush()) onEvent(toReasoningEvent(msg));
+  } finally {
+    // Abort, a malformed event or a throwing consumer must still release the body.
+    reader.cancel().catch(() => {});
   }
-  for (const msg of parser.flush()) onEvent(toReasoningEvent(msg));
 }

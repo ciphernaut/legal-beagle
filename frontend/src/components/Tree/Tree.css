@@ -6,8 +6,4 @@
 .tree-label { border: none; background: none; cursor: pointer; text-align: left; padding: 0.1rem 0.3rem; border-radius: 3px; }
 .tree-label:hover { background: #eef; }
 .tree-label.selected { background: #dde6ff; font-weight: 600; }
-.prov { font-size: 0.7rem; padding: 0 0.35rem; border-radius: 999px; border: 1px solid #bbb; color: #444; }
-.prov-curated { background: #e3f7e3; }
-.prov-parsed { background: #eef; }
-.prov-llm_extracted { background: #fde9d9; }
 .tree-error { color: #a00; }

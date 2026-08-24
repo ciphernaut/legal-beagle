@@ -1,4 +1,5 @@
 import type { Extraction } from "../api/types";
+import "./ProvenanceBadge.css";
 
 const TITLES: Record<Extraction, string> = {
   curated: "Curated by a human",
