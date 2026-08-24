@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import ReasoningPanel from "./ReasoningPanel";
@@ -15,6 +15,17 @@ const errorStream = 'event: token\ndata: {"text":"partial"}\n\nevent: error\ndat
 
 function sse(text: string): Response {
   return new Response(new TextEncoder().encode(text), { status: 200, headers: { "content-type": "text/event-stream" } });
+}
+
+/** Emits one chunk, then stays open until the request signal aborts. */
+function abortableSse(text: string, signal: AbortSignal): Response {
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode(text));
+      signal.addEventListener("abort", () => controller.error(new DOMException("Aborted", "AbortError")));
+    },
+  });
+  return new Response(stream, { status: 200, headers: { "content-type": "text/event-stream" } });
 }
 
 test("button is disabled without a selection", () => {
@@ -50,4 +61,36 @@ test("a 404 from the API is shown as an error", async () => {
   render(<ReasoningPanel selected={{ type: "case", id: 1, label: "x" }} />);
   await userEvent.click(screen.getByRole("button", { name: /Explain/ }));
   expect(await screen.findByRole("alert")).toHaveTextContent(/node not found/);
+});
+
+test("cancelling a run clears the unverified model text", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (_url: string, init: RequestInit) =>
+      abortableSse('event: token\ndata: {"text":"unverified prose"}\n\n', init.signal as AbortSignal)),
+  );
+  render(<ReasoningPanel selected={{ type: "case", id: 100, label: "Mabo" }} />);
+  await userEvent.click(screen.getByRole("button", { name: /Explain/ }));
+  expect(await screen.findByText(/unverified prose/)).toBeInTheDocument();
+
+  await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+  await waitFor(() => expect(document.querySelector(".answer")).toBeNull());
+  expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  expect(screen.getByRole("button", { name: /Explain/ })).toBeEnabled();
+});
+
+test("changing the selected node clears the previous node's reasoning", async () => {
+  vi.stubGlobal("fetch", vi.fn(async () => sse(okStream)));
+  const { rerender } = render(<ReasoningPanel selected={{ type: "case", id: 100, label: "Mabo" }} />);
+  await userEvent.click(screen.getByRole("button", { name: /Explain/ }));
+  expect(await screen.findByText(/Citation precision: 67%/)).toBeInTheDocument();
+
+  rerender(<ReasoningPanel selected={{ type: "provision", id: 12, label: "Constitution s109" }} />);
+
+  await waitFor(() => expect(screen.queryByText(/Citation precision/)).not.toBeInTheDocument());
+  expect(document.querySelector(".answer")).toBeNull();
+  expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  expect(screen.getByRole("button", { name: /Explain/ })).toBeEnabled();
 });

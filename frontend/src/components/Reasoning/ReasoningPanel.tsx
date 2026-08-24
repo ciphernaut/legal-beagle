@@ -4,7 +4,7 @@ import { useReverseReasoning } from "./useReverseReasoning";
 import "./Reasoning.css";
 
 export default function ReasoningPanel({ selected }: { selected: NodeRef | null }) {
-  const { state, run, cancel } = useReverseReasoning();
+  const { state, run, cancel } = useReverseReasoning(selected ? `${selected.type}:${selected.id}` : null);
   const streaming = state.phase === "streaming";
   const checkable = state.verification ? state.verification.citations.filter((c) => c.status !== "unverifiable") : [];
   const resolvedCount = checkable.filter((c) => c.status !== "unresolved").length;
