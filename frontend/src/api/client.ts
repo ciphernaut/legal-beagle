@@ -1,6 +1,10 @@
 import type { NodeDetail, NodeType, TreeNode } from "./types";
 
-export const API_BASE = "/api";
+/**
+ * Same-origin `/api` by default (the dev server and any production reverse proxy map it to the
+ * backend). Set VITE_API_BASE at build time to point a static build at an absolute backend URL.
+ */
+export const API_BASE = import.meta.env.VITE_API_BASE ?? "/api";
 
 export class ApiError extends Error {
   status: number;

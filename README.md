@@ -61,6 +61,10 @@ model's reasoning. Streamed text is flagged as unverified until the citation che
 each citation then gets a badge: ✅ verified in context · ⚠️ real but outside the supplied
 context · ❌ not found in the corpus · ❔ cannot be checked (reported citation).
 
+For a production build, either reverse-proxy `/api` to the backend, or set `VITE_API_BASE` (e.g.
+`VITE_API_BASE=https://api.example.com`) at build time to point the static build at an absolute
+backend URL — the latter then requires CORS to be enabled on the backend, which it is not yet.
+
 ### Pointing it at an LLM
 
 The reasoning endpoint talks to any OpenAI-compatible server via LiteLLM. Copy the example env
